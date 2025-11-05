@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreeBooks & PDF | EduLinkNaija</title>
+  <link rel="stylesheet" href="./CSS/style.css">
+  <script defer src="./JS/freebooks.js"></script>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="logo">EduLink<span>Naija</span></div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="freebooks.html" class="active">FreeBooks/PDF</a></li>
+        <li><a href="./quiz.html">Quiz & Past Questions</a></li>
+        <li><a href="./leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <div class="menu-toggle">&#9776;</div>
+    </nav>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero about-hero">
+    <div class="hero-content">
+      <h1>FreeBooks & PDFs</h1>
+      <p>Access a growing library of learning materials — 100% free and accessible to all students.</p>
+    </div>
+  </section>
+
+  <!-- BOOKS ALREADY ON SITE -->
+  <section class="projects" id="book-section">
+    <h2>Available PDFs</h2>
+    <div id="book-container" class="project-container">
+      <!-- Preloaded Books -->
+      <div class="book-card">
+      <iframe src="./pdf/New School Physics for senior secondary schools.pdf" frameborder="0"></iframe>
+        <h3>All_Tied_Up</h3>
+        <a href="./pdf/New School Physics for senior secondary schools.pdf" download>Download</a>
+      </div>
+
+      <div class="book-card">
+        <iframe src="./PDFs/English_Grammar_Made_Easy.pdf" frameborder="0"></iframe>
+        <h3>English Grammar Made Easy</h3>
+        <a href="./PDFs/English_Grammar_Made_Easy.pdf" download>Download</a>
+      </div>
+
+      <div class="book-card">
+        <iframe src="./PDFs/Science_Explorers_Guide.pdf" frameborder="0"></iframe>
+        <h3>Science Explorer's Guide</h3>
+        <a href="./PDFs/Science_Explorers_Guide.pdf" download>Download</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPLOAD SECTION -->
+  <section id="upload-section">
+    <h2>Upload Your Own Book</h2>
+    <form id="uploadForm">
+      <input type="text" id="bookTitle" placeholder="Enter Book Title" required>
+      <input type="file" id="bookFile" accept="application/pdf" required>
+      <button type="submit">Upload PDF</button>
+    </form>
+    <p id="uploadMessage"></p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 EduLinkNaija | Created by Oluyede Samuel & Adewuyi Taiwo</p>
+    <div class="social-icons">
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+    </div>
+  </footer>
+
+  <!-- FontAwesome -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="./JS/aps.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard | EduLinkNaija</title>
+  <link rel="stylesheet" href="./CSS/style.css" />
+  <script defer src="./JS/aps.js"></script>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="logo">EduLink<span>Naija</span></div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="freebooks.html">FreeBooks/PDF</a></li>
+        <li><a href="./quiz.html">Quiz & Past Questions</a></li>
+        <li><a href="./leaderboard.html" class="active">Leaderboard</a></li>
+      </ul>
+      <div class="menu-toggle">&#9776;</div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero leaderboard-hero">
+    <div class="hero-content">
+      <h1>Leaderboard</h1>
+      <p>Celebrate the brightest learners on EduLinkNaija!</p>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD SECTION -->
+  <section class="leaderboard-section">
+    <h2>Top Performers</h2>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Subject</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <!-- JS dynamically fills leaderboard -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 EduLinkNaija | Created by Oluyede Samuel & Adewuyi Taiwo</p>
+    <div class="social-icons">
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+    </div>
+  </footer>
+
+  <!-- FontAwesome -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>
