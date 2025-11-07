@@ -633,3 +633,113 @@ footer {
   font-weight: bold;
   color: #1c2541;
 }
+/* ==============================
+   UNIVERSAL MOBILE RESPONSIVE DESIGN
+   ============================== */
+
+@media screen and (max-width: 768px) {
+
+  /* General Page Layout */
+  body {
+    padding: 0 10px;
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+
+  header, nav, footer {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  /* Navigation Menu */
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    background: #111;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    z-index: 10;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+
+  .menu-toggle {
+    display: block;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  /* Hero / Home Section */
+  .hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px 10px;
+  }
+
+  .hero h1 {
+    font-size: 1.8rem;
+    line-height: 1.3;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+
+  .hero-btn {
+    width: 80%;
+    padding: 12px;
+    font-size: 1.1rem;
+  }
+
+  /* Quiz Page */
+  .quiz-container {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .quiz-container h2 {
+    font-size: 1.3rem;
+  }
+
+  .option {
+    font-size: 1rem;
+    padding: 10px;
+    margin: 8px 0;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  /* Leaderboard */
+  .leaderboard {
+    width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+  }
+
+  .leaderboard-item {
+    font-size: 1rem;
+    padding: 12px;
+  }
+
+  /* Footer */
+  footer p {
+    font-size: 0.9rem;
+  }
+
+  /* Universal Images and Buttons */
+  img, button {
+    max-width: 100%;
+    height: auto;
+  }
+}
