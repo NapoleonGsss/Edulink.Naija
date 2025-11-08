@@ -1,36 +1,668 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quiz & Past Questions | EduLinkNaija</title>
-  <link rel="stylesheet" href="./CSS/style.css" />
-  <script defer src="./JS/quiz.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>EduLinkNaija — Quiz Arena (Embedded Banks)</title>
+
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<style>
+  :root{
+    --bg-1: #071226;
+    --card: #0e1a2b;
+    --accent: #00e5c3; /* cyan */
+    --accent2: #ff00ff; /* magenta */
+    --muted: #9fb0c8;
+    --glass: rgba(255,255,255,0.03);
+    --success: #28a745;
+    --danger: #e05252;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg-1);color:#e6fbff}
+  header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(6px);position:sticky;top:0;z-index:60;border-bottom:1px solid rgba(255,255,255,0.03)}
+  .logo{font-weight:700;color:var(--accent);letter-spacing:0.4px}
+  .logo span{color:var(--accent2)}
+  nav{display:flex;gap:1rem;align-items:center}
+  .nav-links{display:flex;gap:1rem;list-style:none;margin:0;padding:0}
+  .nav-links a{color:#dceff3;text-decoration:none;padding:0.4rem .6rem;border-radius:8px}
+  .nav-links a.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#02202a}
+  .menu-toggle{display:none;cursor:pointer}
+
+  /* Floating background image */
+  .bg-wrap{
+    position:fixed;inset:0;z-index:-2;overflow:hidden;
+    pointer-events:none;
+  }
+  .bg {
+    position:absolute;inset:-20% -10% -20% -10%;
+    background-image: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1600&q=80');
+    background-size:cover;background-position:center;
+    filter: grayscale(.12) contrast(.9) brightness(.35);
+    transform-origin:center;
+    animation: floatBg 18s ease-in-out infinite;
+    opacity:.85;
+    border-radius:10px;
+    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,1) 100%);
+  }
+  @keyframes floatBg{
+    0%{transform:translateY(-2%) scale(1)}
+    50%{transform:translateY(2%) scale(1.02)}
+    100%{transform:translateY(-2%) scale(1)}
+  }
+
+  /* Page container */
+  .container{max-width:1100px;margin:28px auto;padding:1rem;position:relative;z-index:2}
+  .hero{
+    background: linear-gradient(135deg, rgba(0,229,195,0.04), rgba(124,77,255,0.03));
+    border-radius:12px;padding:20px;display:flex;gap:18px;align-items:center;box-shadow: 0 8px 30px rgba(3,10,20,0.6)
+  }
+  .hero-left{flex:1}
+  .hero h1{margin:0;font-size:1.6rem;color:#eafffb}
+  .hero p{margin:.5rem 0;color:var(--muted)}
+
+  /* Controls */
+  .controls{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-top:.6rem}
+  select,input[type=number],button{padding:.6rem .9rem;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+  button.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#02202a;font-weight:700}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+  /* quiz area */
+  .quiz-grid{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:18px}
+  .card{background:var(--card);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.03)}
+  .question{font-weight:700;font-size:1.05rem;margin-bottom:12px}
+  .options{display:flex;flex-direction:column;gap:8px}
+  .option-btn{background:var(--glass);border:none;padding:10px 12px;border-radius:10px;color:var(--muted);cursor:pointer;text-align:left;transition:transform .12s ease, box-shadow .12s ease}
+  .option-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(2,16,26,0.5)}
+  .option-btn.correct{background:linear-gradient(90deg,var(--success), #56d38f);color:#012a18}
+  .option-btn.wrong{background:linear-gradient(90deg,var(--danger), #ff8a8a);color:#2b0b0b}
+
+  .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted)}
+  .progressbar{height:10px;background:rgba(255,255,255,.03);border-radius:999px;margin-top:10px;overflow:hidden}
+  .progressbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}
+
+  /* sidebar */
+  .sidebar h3{margin-top:0}
+  .stats{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .stat{display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted)}
+
+  .results{display:none;text-align:center;margin-top:10px}
+  .big-score{font-size:2rem;font-weight:800;color:var(--accent)}
+  .gradeTag{display:block;margin-top:8px;font-weight:700}
+
+  .mini-lb{margin-top:12px}
+  .lb-table{width:100%;border-collapse:collapse}
+  .lb-table th,.lb-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:.9rem}
+
+  footer{margin-top:26px;text-align:center;color:#9fb0c8;padding:14px}
+
+  /* responsive */
+  @media (max-width:920px){.quiz-grid{grid-template-columns:1fr}.hero{flex-direction:column}}
+  @media (max-width:600px){
+    header{padding:.6rem .8rem}
+    .nav-links{display:none}
+    .menu-toggle{display:block}
+    .container{padding:.6rem}
+  }
+</style>
 </head>
 <body>
-  <!-- HEADER -->
-  <header>
-    <div class="logo">EduLink<span>Naija</span></div>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About Us</a></li>
-        <li><a href="freebooks.html">FreeBooks/PDF</a></li>
-        <li><a href="quiz.html" class="active">Quiz & Past Questions</a></li>
-        <li><a href="./leaderboard.html">Leaderboard</a></li>
-      </ul>
-    </nav>
-  </header>
 
-  <!-- HERO SECTION -->
-  <section class="hero quiz-hero">
-    <div class="hero-content">
-      <h1>Interactive Quiz Arena</h1>
-      <p>Challenge yourself with Math, English, Physics, and Chemistry quizzes!</p>
+<!-- floating background -->
+<div class="bg-wrap" aria-hidden="true"><div class="bg"></div></div>
+
+<header>
+  <div class="logo">EduLink<span>Naija</span></div>
+  <nav>
+    <ul class="nav-links">
+      <li><a href="./index.html">Home</a></li>
+      <li><a href="./about.html">About</a></li>
+      <li><a href="./freebooks.html">FreeBooks</a></li>
+      <li><a href="./quiz.html" class="active">Quiz</a></li>
+      <li><a href="./leaderboard.html">Leaderboard</a></li>
+    </ul>
+  </nav>
+  <div class="menu-toggle" id="mobile-menu" aria-hidden="true">
+    <span style="display:block;width:22px;height:3px;background:#9fdce8;margin:4px 0;border-radius:2px"></span>
+    <span style="display:block;width:22px;height:3px;background:#9fdce8;margin:4px 0;border-radius:2px"></span>
+    <span style="display:block;width:22px;height:3px;background:#9fdce8;margin:4px 0;border-radius:2px"></span>
+  </div>
+</header>
+
+<main class="container" role="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-left">
+      <h1 id="hero-title">Futuristic Exam Room — SS3 Practice</h1>
+      <p>Mixed WAEC/NECO-style and revision questions. Select subject, choose number of questions, and press Start. Scores auto-save to leaderboard for live competition.</p>
+
+      <div class="controls" role="region" aria-label="quiz controls">
+        <label for="subjectSelect" class="sr-only">Subject</label>
+        <select id="subjectSelect" aria-label="Select subject">
+          <option value="">— Choose subject —</option>
+          <option value="mathematics">Mathematics</option>
+          <option value="english">English</option>
+          <option value="physics">Physics</option>
+          <option value="chemistry">Chemistry</option>
+        </select>
+
+        <label for="numQ" class="sr-only">Number of questions</label>
+        <input id="numQ" type="number" min="5" max="200" value="20" title="Number of questions per attempt" />
+
+        <button class="primary" id="startBtn">Start Quiz</button>
+        <button class="ghost" id="viewLeaderboard">Leaderboard</button>
+      </div>
+      <div style="margin-top:6px;color:var(--muted);font-size:.9rem">Pro tip: Do 20 for warm-up, 50 for mock practice, 100+ for full exam simulation.</div>
+    </div>
+
+    <div style="width:320px" aria-hidden="true">
+      <div class="card sidebar" role="complementary" aria-label="session info">
+        <h3>Session Info</h3>
+        <div class="stats">
+          <div class="stat"><span>Pool per subject</span><strong>200</strong></div>
+          <div class="stat"><span>Shuffle</span><strong>On</strong></div>
+          <div class="stat"><span>Autosave</span><strong>localStorage</strong></div>
+        </div>
+        <button class="primary" id="openLeaderBtn" style="margin-top:10px;width:100%">Open Leaderboard</button>
+        <div style="margin-top:8px;color:var(--muted);font-size:.85rem">Local leaderboard updates instantly after you save a result.</div>
+      </div>
     </div>
   </section>
 
-  <!-- QUIZ UPLOAD SECTION -->
-  <section class="upload-section">
-    <h2>Upload New Quiz (JSON File)</h2>
-    <p>Upload your custom quiz file for any
+  <section class="quiz-grid" aria-live="polite">
+    <div class="card" id="quizCard" aria-label="quiz area">
+      <div id="questionBox" style="min-height:150px;color:var(--muted)">
+        <div>Choose a subject and press <strong>Start Quiz</strong> to begin.</div>
+      </div>
+
+      <div class="meta" aria-hidden="true">
+        <div id="qmeta">Q • of •</div>
+        <div id="timer">00:00</div>
+      </div>
+      <div class="progressbar" aria-hidden="true"><i id="progressFill"></i></div>
+    </div>
+
+    <aside class="card sidebar" id="rightPanel" aria-live="polite">
+      <h3>Live Stats</h3>
+      <div class="stat"><span>Current Subject</span><strong id="curSubject">—</strong></div>
+      <div class="stat"><span>Questions</span><strong id="curCount">0</strong></div>
+      <div class="stat"><span>Answered</span><strong id="answeredCount">0</strong></div>
+      <div class="stat"><span>Score</span><strong id="curScore">0</strong></div>
+
+      <div id="resultsPanel" class="results" aria-hidden="true">
+        <div class="big-score" id="finalScore">0</div>
+        <div id="finalText" class="gradeTag"></div>
+
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+          <input id="playerName" placeholder="Your name" style="padding:.6rem;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" />
+          <button id="saveBtn" class="primary">Save</button>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+          <button id="retryBtn" class="ghost">Try again</button>
+          <button id="exportBtn" class="ghost">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="mini-lb" style="margin-top:12px">
+        <h4 style="margin:.25rem 0;color:var(--muted)">Recent Scores</h4>
+        <table class="lb-table" id="miniLb" role="table" aria-label="Mini leaderboard"></table>
+      </div>
+    </aside>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 EduLinkNaija | Created by Oluyede Samuel & Adewuyi Taiwo</p>
+  </footer>
+</main>
+
+<!-- Leaderboard modal -->
+<div id="lbModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:120;align-items:center;justify-content:center;padding:16px">
+  <div style="max-width:900px;width:100%;background:#061223;border-radius:12px;padding:14px;color:#e8fbff;box-shadow:0 10px 40px rgba(2,8,16,0.8);">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0">EduLinkNaija Leaderboard</h3>
+      <div>
+        <button id="closeLb" class="ghost">Close</button>
+        <button id="clearLb" class="ghost">Clear</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;max-height:60vh;overflow:auto">
+      <table class="lb-table" id="fullLb" style="width:100%"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------------------
+   Deterministic RNG (seeded)
+   --------------------------- */
+function createRNG(seed) {
+  let s = seed >>> 0;
+  return function() {
+    s = Math.imul(1664525, s) + 1013904223 | 0;
+    return ((s >>> 0) / 4294967295);
+  };
+}
+
+/* =================================================
+   Question Generators (200 per subject) - mixed SS3
+   ================================================= */
+function generateMath(seed){
+  const rand = createRNG(seed|0);
+  const out = [];
+  for(let i=0;i<200;i++){
+    const t = i % 6;
+    if(t===0){
+      const a = Math.floor(6 + rand()*95);
+      const b = Math.floor(2 + rand()*12);
+      const ans = String(a*b);
+      const opts = shuffle([ans, String(a*b + Math.floor(rand()*7)+1), String(Math.max(1,a*b - (Math.floor(rand()*5)+1))), String(Math.floor((a*a)/b))], rand);
+      out.push({q:`What is ${a} × ${b}?`, options:opts, answer:ans});
+    } else if(t===1){
+      const x = Math.floor(2 + rand()*12);
+      const coeff = Math.floor(2 + rand()*8);
+      const ans = `${coeff + x}x`;
+      const opts = shuffle([ans, `${coeff + x + 1}x`, `${Math.max(1,coeff + x -1)}x`, `${coeff}x`], rand);
+      out.push({q:`Simplify: ${coeff}x + ${x}x`, options:opts, answer:ans});
+    } else if(t===2){
+      const n = Math.floor(2 + rand()*20);
+      const ans = String(n);
+      const opts = shuffle([ans, String(n+1), String(Math.max(1,n-1)), String(n+2)], rand);
+      out.push({q:`Find the square root of ${n*n}.`, options:opts, answer:ans});
+    } else if(t===3){
+      const a = Math.floor(12 + rand()*88);
+      const b = Math.floor(2 + rand()*9);
+      const ans = String(Math.floor(a/b));
+      const opts = shuffle([ans, String(Math.ceil(a/b)), String(Math.round(a/b)), String(Math.floor(a/b)+1)], rand);
+      out.push({q:`What is ${a} ÷ ${b}, rounded down to the nearest integer?`, options:opts, answer:ans});
+    } else if(t===4){
+      const a = Math.floor(2 + rand()*9);
+      const x = Math.floor(1 + rand()*12);
+      const b = Math.floor(rand()*10);
+      const c = a*x + b;
+      const ans = String(x);
+      const opts = shuffle([ans, String(x+1), String(Math.max(0,x-1)), String(x+2)], rand);
+      out.push({q:`Solve for x: ${a}x + ${b} = ${c}.`, options:opts, answer:ans});
+    } else {
+      const base = Math.floor(10 + rand()*90);
+      const percent = Math.floor(5 + rand()*45);
+      const ansVal = Math.round(base * percent / 100);
+      const ans = String(ansVal);
+      const opts = shuffle([ans, String(Math.max(1,ansVal-2)), String(Math.round(base * (percent+3)/100)), String(Math.round(base * Math.max(1,percent-5)/100))], rand);
+      out.push({q:`What is ${percent}% of ${base}?`, options:opts, answer:ans});
+    }
+  }
+  return out;
+}
+
+function generateEnglish(seed){
+  const rand = createRNG(seed+12345);
+  const out = [];
+  const grammar = [
+    {q:"Choose the correct word: 'She ____ to the party last night.'", options:["went","gone","goes","going"], answer:"went"},
+    {q:"Choose the correct sentence:", options:["He and I went to the market.","Him and me went to the market.","Me and him went to the market.","He and me went to the market."], answer:"He and I went to the market."},
+    {q:"Pick the synonym of 'abundant'.", options:["plentiful","rare","scarce","minimal"], answer:"plentiful"},
+    {q:"What is the past tense of 'to swim'?", options:["swam","swum","swimming","swims"], answer:"swam"},
+    {q:"Which is correct before a noun: 'Its' or 'It's'?", options:["Its (possessive)","It's (it is)","Either","Neither"], answer:"Its (possessive)"}
+  ];
+  const vocab = ["abundant","subtle","obscure","eloquent","align","impact","derive","infer","precise","ambiguous"];
+  for(let i=0;i<200;i++){
+    const t = i % 5;
+    if(t===0){
+      const item = grammar[Math.floor(rand()*grammar.length)];
+      out.push({q:item.q, options: shuffle(item.options, rand), answer:item.answer});
+    } else if(t===1){
+      const sentences = [
+        {q:"Choose the best preposition: 'She arrived ___ the airport.'", options:["at","in","on","to"], answer:"at"},
+        {q:"Choose the best word: 'He is good ___ mathematics.'", options:["at","in","on","for"], answer:"at"},
+        {q:"Choose the correct plural: 'One sheep, two ___.'", options:["sheep","sheeps","sheepen","shee"], answer:"sheep"}
+      ];
+      const pick = sentences[Math.floor(rand()*sentences.length)];
+      out.push({q:pick.q, options:shuffle(pick.options, rand), answer:pick.answer});
+    } else if(t===2){
+      const idx = Math.floor(rand()*vocab.length);
+      const w = vocab[idx];
+      const map = {abundant:"plentiful", subtle:"delicate", obscure:"unclear", eloquent:"fluent", align:"arrange", impact:"effect", derive:"obtain", infer:"conclude", precise:"exact", ambiguous:"unclear"};
+      const ans = map[w] || "plentiful";
+      const opts = shuffle([ans, ans+"ly", "wrong1", "wrong2"].map((o,i)=> o), rand);
+      out.push({q:`Pick the synonym of '${w}'.`, options:opts, answer:ans});
+    } else if(t===3){
+      const q = "Choose the best summary: 'The boy studied hard, passed the exam and was happy.'";
+      const opts = ["He studied and passed","He failed","He didn't study","He was angry"];
+      out.push({q, options:shuffle(opts, rand), answer:"He studied and passed"});
+    } else {
+      const q = "Identify the past participle: 'He has ___ the work.'";
+      const opts = ["done","did","doing","do"];
+      out.push({q, options:shuffle(opts, rand), answer:"done"});
+    }
+  }
+  return out;
+}
+
+function generatePhysics(seed){
+  const rand = createRNG(seed+33333);
+  const out = [];
+  const basics = [
+    {q:"What is the SI unit of force?", options:["Newton","Joule","Watt","Pascal"], answer:"Newton"},
+    {q:"The speed of light in vacuum is approximately:", options:["3×10^8 m/s","3×10^6 m/s","3×10^5 m/s","3×10^7 m/s"], answer:"3×10^8 m/s"},
+    {q:"Which quantity is a scalar?", options:["Mass","Velocity","Acceleration","Force"], answer:"Mass"},
+    {q:"A ball is thrown vertically up. At its highest point its velocity is __ and acceleration is __.", options:["0, g downward","g upward, 0","0, 0","g downward, 0"], answer:"0, g downward"}
+  ];
+  for(let i=0;i<200;i++){
+    const t = i % 5;
+    if(t===0){
+      const item = basics[Math.floor(rand()*basics.length)];
+      out.push({q:item.q, options:shuffle(item.options, rand), answer:item.answer});
+    } else if(t===1){
+      const u = Math.floor(2+rand()*12);
+      const a = [ -10, -9.8, -5, 0, 2, 5 ][Math.floor(rand()*6)];
+      const tt = Math.floor(1+rand()*8);
+      const v = u + a*tt;
+      const q = `If initial velocity u=${u} m/s and acceleration a=${a} m/s² for t=${tt}s, what is the final velocity v (m/s)?`;
+      out.push({q, options:shuffle([String(v), String(v+2), String(v-3), String(v+5)], rand), answer:String(v)});
+    } else if(t===2){
+      const m = Math.floor(1+rand()*20);
+      const g = 10;
+      const h = Math.floor(1+rand()*12);
+      const pe = m*g*h;
+      out.push({q:`A mass of ${m}kg is raised ${h}m. What is its potential energy (use g=${g} m/s²)?`, options:shuffle([`${pe} J`, `${pe+10} J`, `${Math.max(1,pe-20)} J`, `${pe+50} J`], rand), answer:`${pe} J`});
+    } else if(t===3){
+      const q = "Which phenomenon explains the splitting of white light into colours?";
+      const opts = ["Dispersion","Diffraction","Reflection","Interference"];
+      out.push({q, options:shuffle(opts, rand), answer:"Dispersion"});
+    } else {
+      const m = Math.floor(1+rand()*10);
+      const v = Math.floor(1+rand()*10);
+      const density = (m / v).toFixed(2);
+      out.push({q:`If mass = ${m}kg and volume = ${v}m³, what is density (kg/m³) to two decimals?`, options:shuffle([`${density}`, `${(m/(v+1)).toFixed(2)}`, `${(m*2/v).toFixed(2)}`, `${(m/(v-1||1)).toFixed(2)}`], rand), answer:`${density}`});
+    }
+  }
+  return out;
+}
+
+function generateChem(seed){
+  const rand = createRNG(seed+54321);
+  const out = [];
+  const basics = [
+    {q:"What is the chemical symbol for Sodium?", options:["Na","S","So","N"], answer:"Na"},
+    {q:"What is the chemical formula of water?", options:["H2O","HO2","O2H","H2O2"], answer:"H2O"},
+    {q:"Atomic number of Oxygen is:", options:["8","6","7","9"], answer:"8"},
+    {q:"pH less than 7 indicates a substance is:", options:["Acidic","Basic","Neutral","Alkaline"], answer:"Acidic"}
+  ];
+  for(let i=0;i<200;i++){
+    const t = i % 5;
+    if(t===0){
+      const item = basics[Math.floor(rand()*basics.length)];
+      out.push({q:item.q, options:shuffle(item.options, rand), answer:item.answer});
+    } else if(t===1){
+      out.push({q:"Which gas is produced when hydrochloric acid reacts with zinc?", options:shuffle(["Hydrogen","Oxygen","Chlorine","Nitrogen"], rand), answer:"Hydrogen"});
+    } else if(t===2){
+      out.push({q:"Which element is most reactive among: Sodium, Neon, Argon, Helium?", options:shuffle(["Sodium","Neon","Argon","Helium"], rand), answer:"Sodium"});
+    } else if(t===3){
+      const moles = Math.floor(1 + rand()*6);
+      const ans = `${(moles * 6.02).toFixed(2)}×10^23`;
+      out.push({q:`Approximately how many particles are in ${moles} mole(s)? (use Avogadro's number 6.02×10^23)`, options:shuffle([ans, `${(moles * 6.02 + 1).toFixed(2)}×10^23`, `${(moles * 6.02 - 0.5).toFixed(2)}×10^23`, `${(moles * 6.02 + 2).toFixed(2)}×10^23`], rand), answer:ans});
+    } else {
+      out.push({q:"Which of these is a strong acid?", options:shuffle(["HCl","CH3COOH","H2O","NH3"], rand), answer:"HCl"});
+    }
+  }
+  return out;
+}
+
+/* shuffle helper */
+function shuffle(arr, rand) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* =======================
+   Build Pools (deterministic)
+   ======================= */
+const SEED = 20251107;
+const POOLS = {
+  mathematics: generateMath(SEED + 11),
+  english: generateEnglish(SEED + 22),
+  physics: generatePhysics(SEED + 33),
+  chemistry: generateChem(SEED + 44)
+};
+
+/* expose for debugging */
+window.EDU_QUIZZES = POOLS;
+
+/* ========================
+   Quiz Engine (state + UI)
+   ======================== */
+let session = {
+  subject: null,
+  pool: [],
+  numQuestions: 20,
+  current: 0,
+  score: 0,
+  startTime: null,
+  timer: null
+};
+
+const subjectSelect = document.getElementById('subjectSelect');
+const numQInput = document.getElementById('numQ');
+const startBtn = document.getElementById('startBtn');
+const questionBox = document.getElementById('questionBox');
+const qmeta = document.getElementById('qmeta');
+const progressFill = document.getElementById('progressFill');
+const curSubject = document.getElementById('curSubject');
+const curCount = document.getElementById('curCount');
+const answeredCount = document.getElementById('answeredCount');
+const curScore = document.getElementById('curScore');
+const resultsPanel = document.getElementById('resultsPanel');
+const finalScore = document.getElementById('finalScore');
+const finalText = document.getElementById('finalText');
+const playerName = document.getElementById('playerName');
+const saveBtn = document.getElementById('saveBtn');
+const retryBtn = document.getElementById('retryBtn');
+const exportBtn = document.getElementById('exportBtn');
+const miniLb = document.getElementById('miniLb');
+
+const lbModal = document.getElementById('lbModal');
+const viewLeaderboardBtn = document.getElementById('viewLeaderboard');
+const openLeaderBtn = document.getElementById('openLeaderBtn');
+const closeLb = document.getElementById('closeLb');
+const clearLb = document.getElementById('clearLb');
+const fullLb = document.getElementById('fullLb');
+
+/* Timer */
+function startTimer(){
+  session.startTime = Date.now();
+  const timerEl = document.getElementById('timer');
+  if(session.timer) clearInterval(session.timer);
+  session.timer = setInterval(()=> {
+    const s = Math.floor((Date.now()-session.startTime)/1000);
+    timerEl.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  },500);
+}
+function stopTimer(){ if(session.timer) clearInterval(session.timer); session.timer = null; }
+
+/* start new session */
+function startSession(){
+  const subj = subjectSelect.value;
+  const num = parseInt(numQInput.value,10) || 20;
+  if(!subj){ alert('Please select a subject.'); return; }
+  if(num < 1 || num > 200){ alert('Number must be between 1 and 200.'); return; }
+
+  session.subject = subj;
+  session.numQuestions = num;
+  const rand = createRNG(Date.now() % 1000000);
+  session.pool = shuffle(POOLS[subj].slice(), rand).slice(0, num);
+  session.current = 0;
+  session.score = 0;
+  startTimer();
+  renderQuestion();
+  updateSidebar();
+  resultsPanel.style.display = 'none';
+}
+
+/* render current question */
+function renderQuestion(){
+  const qobj = session.pool[session.current];
+  if(!qobj){ finishSession(); return; }
+  questionBox.innerHTML = '';
+  const qEl = document.createElement('div'); qEl.className='question'; qEl.textContent = `Q${session.current+1}. ${qobj.q}`;
+  questionBox.appendChild(qEl);
+
+  const opts = document.createElement('div'); opts.className='options';
+  const rand = createRNG(session.current + 777777);
+  const shuffled = shuffle(qobj.options, rand);
+  shuffled.forEach(opt => {
+    const b = document.createElement('button'); b.className='option-btn'; b.textContent = opt;
+    b.addEventListener('click', ()=> handleAnswer(b,opt,qobj.answer));
+    opts.appendChild(b);
+  });
+  questionBox.appendChild(opts);
+
+  qmeta.textContent = `Question ${session.current+1} of ${session.numQuestions}`;
+  progressFill.style.width = `${Math.round((session.current/session.numQuestions)*100)}%`;
+  curSubject.textContent = session.subject;
+  curCount.textContent = session.numQuestions;
+  answeredCount.textContent = session.current;
+  curScore.textContent = session.score;
+}
+
+/* answer handler */
+function handleAnswer(btn, selected, correct){
+  // disable buttons
+  const all = btn.parentElement.querySelectorAll('button');
+  all.forEach(x=> x.disabled = true);
+  if(selected === correct){
+    btn.classList.add('correct');
+    session.score++;
+  } else {
+    btn.classList.add('wrong');
+    // highlight correct
+    all.forEach(x=> { if(x.textContent === correct) x.classList.add('correct'); });
+  }
+  answeredCount.textContent = session.current + 1;
+  curScore.textContent = session.score;
+  setTimeout(()=> {
+    session.current++;
+    if(session.current >= session.numQuestions) finishSession(); else renderQuestion();
+  },700);
+}
+
+/* finish */
+function finishSession(){
+  stopTimer();
+  questionBox.innerHTML = '';
+  progressFill.style.width = '100%';
+  const score = session.score;
+  const total = session.numQuestions;
+  const percent = Math.round((score/total) * 100);
+  finalScore.textContent = `${score} / ${total}`;
+  finalText.textContent = gradeMessage(percent);
+  resultsPanel.style.display = '';
+  document.getElementById('resultsPanel').classList.add('show');
+  saveBtn.disabled = false;
+}
+
+/* grade message */
+function gradeMessage(percent){
+  if(percent >= 90) return "A — Excellent (King material)";
+  if(percent >= 80) return "B — Great (Scholar)";
+  if(percent >= 70) return "C — Solid";
+  if(percent >= 60) return "D — Improving";
+  if(percent >= 50) return "E — Needs Work";
+  return "F — Keep Practicing";
+}
+
+/* save result to local leaderboard */
+function saveResult(){
+  const name = (playerName.value || 'Anonymous').trim();
+  const store = JSON.parse(localStorage.getItem('edulink_leaderboard') || '[]');
+  const percent = Math.round((session.score/session.numQuestions) * 100);
+  const entry = { name, subject: session.subject, score: percent, rawScore: session.score, total: session.numQuestions, date: new Date().toISOString() };
+  store.push(entry);
+  // sort descending by score then latest
+  store.sort((a,b) => b.score - a.score || new Date(b.date) - new Date(a.date));
+  localStorage.setItem('edulink_leaderboard', JSON.stringify(store.slice(0,500)));
+  updateMini();
+  alert('Saved to leaderboard! Open Leaderboard to compete.');
+  playerName.value = '';
+}
+
+/* mini leaderboard update */
+function updateMini(){
+  const store = JSON.parse(localStorage.getItem('edulink_leaderboard') || '[]');
+  if(store.length === 0){ miniLb.innerHTML = '<tr><td style="color:var(--muted)">No scores yet</td></tr>'; return; }
+  const top = store.slice(0,6);
+  let html = '<thead><tr><th>Rank</th><th>Name</th><th>Subj</th><th>%</th></tr></thead><tbody>';
+  top.forEach((e,i)=>{
+    const cls = i<3 ? 'grade-A' : '';
+    html += `<tr class="${cls}"><td>#${i+1}</td><td>${escapeHtml(e.name)}</td><td>${escapeHtml(e.subject)}</td><td>${e.score}%</td></tr>`;
+  });
+  html += '</tbody>';
+  miniLb.innerHTML = html;
+}
+
+/* leaderboard modal */
+function openLeaderboard(){
+  const store = JSON.parse(localStorage.getItem('edulink_leaderboard') || '[]');
+  let html = '<thead><tr><th>Rank</th><th>Name</th><th>Subject</th><th>Score</th><th>Date</th></tr></thead><tbody>';
+  store.forEach((e,i)=>{
+    const cls = i < 3 ? 'grade-A' : (i >= Math.max(0, store.length - 3) ? 'grade-F' : '');
+    html += `<tr class="${cls}"><td>#${i+1}</td><td>${escapeHtml(e.name)}</td><td>${escapeHtml(e.subject)}</td><td>${e.score}%</td><td>${new Date(e.date).toLocaleString()}</td></tr>`;
+  });
+  html += '</tbody>';
+  fullLb.innerHTML = html;
+  lbModal.style.display = 'flex';
+}
+
+/* clear leaderboard */
+function clearLeaderboard(){
+  if(!confirm('Clear all saved scores?')) return;
+  localStorage.removeItem('edulink_leaderboard');
+  updateMini();
+  openLeaderboard();
+}
+
+/* export CSV */
+function exportCSV(){
+  const store = JSON.parse(localStorage.getItem('edulink_leaderboard') || '[]');
+  if(store.length===0){ alert('No scores to export'); return; }
+  const rows = [['Rank','Name','Subject','Score','Raw','Total','Date']];
+  store.forEach((e,i)=> rows.push([i+1, e.name, e.subject, `${e.score}%`, e.rawScore, e.total, new Date(e.date).toLocaleString()]));
+  const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'edulink_leaderboard.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+/* helpers */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+
+/* keyboard support (1-4) */
+document.addEventListener('keydown',(e)=>{
+  const btns = Array.from(document.querySelectorAll('.option-btn')).filter(b=>!b.disabled);
+  if(!btns.length) return;
+  if(e.key >= '1' && e.key <= String(Math.min(4,btns.length))) btns[e.key-1].click();
+});
+
+/* wire UI */
+startBtn.addEventListener('click', startSession);
+saveBtn.addEventListener('click', saveResult);
+retryBtn.addEventListener('click', ()=> { resultsPanel.style.display='none'; questionBox.innerHTML='<div style="color:var(--muted)">Choose subject and start a new quiz.</div>'; progressFill.style.width='0%'; curSubject.textContent='—'; curCount.textContent='0'; answeredCount.textContent='0'; curScore.textContent='0'; });
+exportBtn.addEventListener('click', exportCSV);
+viewLeaderboardBtn.addEventListener('click', openLeaderboard);
+openLeaderBtn.addEventListener('click', openLeaderboard);
+closeLb.addEventListener('click', ()=> lbModal.style.display='none');
+clearLb.addEventListener('click', clearLeaderboard);
+
+/* init */
+updateMini();
+if(!localStorage.getItem('edulink_intro')){
+  localStorage.setItem('edulink_intro','1');
+  setTimeout(()=> alert('Welcome to the EduLinkNaija futuristic exam room! Use 1-4 keys to answer, save your result to the global leaderboard.'),600);
+}
+</script>
+</body>
+</html>
